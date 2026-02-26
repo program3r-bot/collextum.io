@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   CameraIcon,
   ChatBubbleLeftRightIcon,
+  ShieldExclamationIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Home() {
@@ -20,7 +21,33 @@ export default function Home() {
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* War Center Card */}
+          <Link href="/war-center" className="group block no-underline">
+            <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-8 h-full cursor-pointer transform hover:-translate-y-1">
+              <div className="flex flex-col items-center text-center h-full">
+                <div className="bg-red-100 rounded-full p-4 mb-4 group-hover:bg-red-200 transition-colors">
+                  <ShieldExclamationIcon className="h-12 w-12 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-3">
+                  War Center
+                </h2>
+                <p className="text-gray-600 mb-4 flex-grow">
+                  Explore curated collections from the greatest battle and
+                  adventure franchises
+                </p>
+                <div className="mt-auto">
+                  <span className="text-red-600 font-medium group-hover:text-red-700 inline-flex items-center gap-1">
+                    Enter War Center
+                    <span className="transform group-hover:translate-x-1 transition-transform">
+                      →
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Link>
+
           {/* Screenshotter Card */}
           <Link href="/screenshotter" className="group block no-underline">
             <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-8 h-full cursor-pointer transform hover:-translate-y-1">
