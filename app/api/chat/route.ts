@@ -12,6 +12,9 @@ import {
 import { z } from 'zod';
 import { PingAwareTransportWrapper } from '@/lib/mcp-transport';
 import { processMessagesForBase64, processToolCallForBase64, processToolResultForBase64 } from '@/app/lib/s3-utils';
+import { createLogger } from '@/app/lib/logger';
+
+const logger = createLogger('chat');
 
 
 
@@ -32,7 +35,7 @@ export async function POST(req: Request) {
         baseURL: process.env.GRADIENT_BASE_URL || '',
     });
 
-    console.log("Model ID:", modelId);
+    logger.info("Model ID:", modelId);
     const temperature = parseFloat(req.headers.get('x-temperature') || '0.7');
     const topK = parseInt(req.headers.get('x-top-k') || '40');
     const topP = parseFloat(req.headers.get('x-top-p') || '0.95');
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
     const maxOutputTokens = parseInt(req.headers.get('x-max-output-tokens') || '32000');
     const maxSteps = parseInt(req.headers.get('x-max-steps') || '20');
 
-    console.log("Using model:", modelId, "with params:", { temperature, topK, topP, presencePenalty, frequencyPenalty, maxOutputTokens, maxSteps });
+    logger.info("Using model:", { modelId, temperature, topK, topP, presencePenalty, frequencyPenalty, maxOutputTokens, maxSteps });
     const url = new URL(process.env.PLAYWRIGHT_MCP_ENDPOINT || 'http://localhost:8080/mcp');
     const baseTransport = new StreamableHTTPClientTransport(url, {});
     const transport = new PingAwareTransportWrapper(baseTransport);
@@ -50,7 +53,7 @@ export async function POST(req: Request) {
         experimental_createMCPClient({
             transport,
             async onUncaughtError(error) {
-                console.error('Uncaught error in MCP client:', error);
+                logger.error('Uncaught error in MCP client:', error);
                 if (mcpClient) {
                     await mcpClient.close();
                 }
@@ -120,7 +123,7 @@ export async function POST(req: Request) {
                 stopWhen: stepCountIs(maxSteps),
                 onStepFinish: async ({ toolResults }: { toolResults?: unknown[] }) => {
                     // Log tool results count instead of full JSON to avoid performance issues
-                    console.log(`Step finished with ${toolResults?.length || 0} tool results`);
+                    logger.info(`Step finished with ${toolResults?.length || 0} tool results`);
                 },
                 maxOutputTokens,
                 topK,
@@ -142,7 +145,7 @@ export async function POST(req: Request) {
 
             return response;
         } catch (streamError) {
-            console.error('Error during streamText:', streamError);
+            logger.error('Error during streamText:', streamError);
 
             // Extract detailed error message if available
             let errorMessage = 'An error occurred';
@@ -172,7 +175,7 @@ export async function POST(req: Request) {
                 errorMessage = streamError.message;
             }
 
-            console.log('Extracted error message:', errorMessage);
+            logger.info('Extracted error message:', errorMessage);
 
             // Return error as part of the stream format that useChat expects
             return new Response(
@@ -188,7 +191,7 @@ export async function POST(req: Request) {
             );
         }
     } catch (error) {
-        console.error('Chat API error caught in catch block:', error);
+        logger.error('Chat API error caught in catch block:', error);
         mcpClient.close();
 
         // Extract detailed error message if available
@@ -228,7 +231,7 @@ export async function POST(req: Request) {
             },
         };
 
-        console.log('Returning error response:', errorResponse);
+        logger.info('Returning error response:', errorResponse);
 
         return new Response(
             JSON.stringify(errorResponse),

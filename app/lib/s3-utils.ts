@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
+import { createLogger } from './logger';
 
 /**
  * S3 Utility for handling base64 file uploads
@@ -26,6 +27,7 @@ const s3Client = new S3Client({
 
 const BUCKET_NAME = process.env.DO_SPACES_BUCKET || '';
 const MAX_CONCURRENT_UPLOADS = 10; // Limit concurrent uploads to prevent overwhelming the system
+const logger = createLogger('s3-utils');
 
 /**
  * Execute promises in batches with concurrency limit
@@ -164,24 +166,24 @@ async function replaceBase64InObject(obj: unknown, filename?: string, mimeType?:
     // Check if it's a data URL
     if (obj.startsWith('data:') && obj.includes(';base64,')) {
       try {
-        console.log('Found base64 data URL, uploading to S3...');
+        logger.info('Found base64 data URL, uploading to S3...');
         const url = await uploadBase64ToS3(obj, filename);
-        console.log('Uploaded to S3:', url);
+        logger.info('Uploaded to S3:', url);
         return url;
       } catch (error) {
-        console.error('Failed to upload to S3:', error);
+        logger.error('Failed to upload to S3:', error);
         return obj; // Return original if upload fails
       }
     }
     // Check if it might be raw base64 (for tool outputs)
     else if (mimeType && /^[A-Za-z0-9+/]+=*$/.test(obj.substring(0, 100))) {
       try {
-        console.log('Found raw base64 data, uploading to S3...');
+        logger.info('Found raw base64 data, uploading to S3...');
         const url = await uploadBase64ToS3(obj, filename, mimeType);
-        console.log('Uploaded to S3:', url);
+        logger.info('Uploaded to S3:', url);
         return url;
       } catch (error) {
-        console.error('Failed to upload to S3:', error);
+        logger.error('Failed to upload to S3:', error);
         return obj; // Return original if upload fails
       }
     }
@@ -213,7 +215,7 @@ export async function processToolCallForBase64(toolCall: {
 }): Promise<{ toolName: string; args: unknown }> {
   // Deep clone the args to avoid mutation
   const processedArgs = JSON.parse(JSON.stringify(toolCall.args));
-  console.log(`Processing tool call for ${toolCall.toolName} with args:`, processedArgs);
+  logger.info(`Processing tool call for ${toolCall.toolName} with args:`, processedArgs);
   // Extract filename from args if available
   let filename: string | undefined;
   if (processedArgs && typeof processedArgs === 'object' && 'filename' in processedArgs) {
@@ -252,7 +254,7 @@ export async function processToolResultForBase64(result: unknown, filename?: str
           // Create upload promise
           const uploadPromise = (async () => {
             try {
-              console.log(`Processing tool result ${item.type} ${i}`);
+              logger.info(`Processing tool result ${item.type} ${i}`);
               
               // Use mimeType if provided, otherwise default based on type
               const mimeType = item.mimeType as string || (item.type === 'image' ? 'image/jpeg' : 'application/octet-stream');
@@ -265,14 +267,14 @@ export async function processToolResultForBase64(result: unknown, filename?: str
               // Replace data with url
               delete item.data;
               item.url = url;
-              console.log(`Processed ${item.type} ${i}: uploaded to ${url}`);
+              logger.info(`Processed ${item.type} ${i}: uploaded to ${url}`);
 
               // Keep mimeType for now for debugging
               // if (item.mimeType) {
               //   delete item.mimeType;
               // }
             } catch (error) {
-              console.error(`Failed to process tool result ${item.type} ${i}:`, error);
+              logger.error(`Failed to process tool result ${item.type} ${i}:`, error);
             }
           })();
 
@@ -283,9 +285,9 @@ export async function processToolResultForBase64(result: unknown, filename?: str
 
     // Wait for all uploads to complete with concurrency limit
     if (uploadPromises.length > 0) {
-      console.log(`Starting ${uploadPromises.length} uploads with max concurrency of ${MAX_CONCURRENT_UPLOADS}...`);
+      logger.info(`Starting ${uploadPromises.length} uploads with max concurrency of ${MAX_CONCURRENT_UPLOADS}...`);
       await batchPromises(uploadPromises, MAX_CONCURRENT_UPLOADS);
-      console.log('All uploads completed');
+      logger.info('All uploads completed');
     }
 
     return clonedResult;
@@ -324,7 +326,7 @@ export async function processMessagesForBase64(messages: unknown[]): Promise<unk
             if (isDataUrl || isBase64) {
               const uploadPromise = (async () => {
                 try {
-                  console.log(`Processing image in message ${i}, part ${j}`);
+                  logger.info(`Processing image in message ${i}, part ${j}`);
                   const filename = part.filename || 'image';
                   const mimeType = part.mimeType || 'image/jpeg'; // Default to JPEG for images
                   const url = await uploadBase64ToS3(imageData, filename, isBase64 ? mimeType : undefined);
@@ -341,7 +343,7 @@ export async function processMessagesForBase64(messages: unknown[]): Promise<unk
                     delete part.mimeType;
                   }
                 } catch (error) {
-                  console.error('Failed to process image:', error);
+                  logger.error('Failed to process image:', error);
                 }
               })();
               uploadPromises.push(uploadPromise);
@@ -358,7 +360,7 @@ export async function processMessagesForBase64(messages: unknown[]): Promise<unk
           if (isDataUrl || isBase64) {
             const uploadPromise = (async () => {
               try {
-                console.log(`Processing file in message ${i}, part ${j}`);
+                logger.info(`Processing file in message ${i}, part ${j}`);
                 const filename = part.filename || part.name || 'file';
                 const mimeType = part.mimeType || part.mediaType || 'application/octet-stream';
                 const url = await uploadBase64ToS3(part.data, filename, isBase64 ? mimeType : undefined);
@@ -370,7 +372,7 @@ export async function processMessagesForBase64(messages: unknown[]): Promise<unk
                   delete part.mimeType;
                 }
               } catch (error) {
-                console.error('Failed to process file:', error);
+                logger.error('Failed to process file:', error);
               }
             })();
             uploadPromises.push(uploadPromise);
@@ -382,9 +384,9 @@ export async function processMessagesForBase64(messages: unknown[]): Promise<unk
 
   // Wait for all uploads to complete with concurrency limit
   if (uploadPromises.length > 0) {
-    console.log(`Starting ${uploadPromises.length} message uploads with max concurrency of ${MAX_CONCURRENT_UPLOADS}...`);
+    logger.info(`Starting ${uploadPromises.length} message uploads with max concurrency of ${MAX_CONCURRENT_UPLOADS}...`);
     await batchPromises(uploadPromises, MAX_CONCURRENT_UPLOADS);
-    console.log('All message uploads completed');
+    logger.info('All message uploads completed');
   }
 
   return clonedMessages;

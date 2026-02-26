@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 // We intentionally are using playwright directly here
 import { chromium, firefox, webkit, devices } from 'playwright';
+import { createLogger } from '@/app/lib/logger';
+
+const logger = createLogger('screenshot');
 
 /**
  * Capture a screenshot of a given URL using a remote browser session
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
         chromium;
 
     try {
-      console.log(`Connecting to Playwright server at ${playwrightEndpoint} for browser: ${browserType}`);
+      logger.info(`Connecting to Playwright server at ${playwrightEndpoint} for browser: ${browserType}`);
       const browserSpecificOptions = {
         channel: browserType === 'msedge' ? 'msedge' :
           browserType === 'chrome' ? 'chrome' :
@@ -84,7 +87,7 @@ export async function POST(request: NextRequest) {
         ...browserSpecificOptions
       });
     } catch (connectError) {
-      console.error('Failed to connect to Playwright server:', connectError);
+      logger.error('Failed to connect to Playwright server:', connectError);
       return NextResponse.json(
         {
           error: 'Browser connection failed',
