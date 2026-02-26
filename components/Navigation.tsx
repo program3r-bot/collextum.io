@@ -8,11 +8,13 @@ import {
   CameraIcon,
   Bars3Icon,
   XMarkIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 const navigationItems = [
   { name: "Screenshotter", href: "/screenshotter", icon: CameraIcon },
   { name: "Chat", href: "/chat", icon: ChatBubbleLeftRightIcon },
+  { name: "Administrator", href: "/admin", icon: Cog6ToothIcon },
 ];
 
 export default function Navigation() {

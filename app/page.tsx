@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   CameraIcon,
   ChatBubbleLeftRightIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Home() {
@@ -20,7 +21,7 @@ export default function Home() {
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {/* Screenshotter Card */}
           <Link href="/screenshotter" className="group block no-underline">
             <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-8 h-full cursor-pointer transform hover:-translate-y-1">
@@ -64,6 +65,31 @@ export default function Home() {
                 <div className="mt-auto">
                   <span className="text-green-600 font-medium group-hover:text-green-700 inline-flex items-center gap-1">
                     Start Chatting
+                    <span className="transform group-hover:translate-x-1 transition-transform">
+                      →
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Administrator Card */}
+          <Link href="/admin" className="group block no-underline">
+            <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-8 h-full cursor-pointer transform hover:-translate-y-1">
+              <div className="flex flex-col items-center text-center h-full">
+                <div className="bg-gray-100 rounded-full p-4 mb-4 group-hover:bg-gray-200 transition-colors">
+                  <Cog6ToothIcon className="h-12 w-12 text-gray-600" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-3">
+                  Administrator
+                </h2>
+                <p className="text-gray-600 mb-4 flex-grow">
+                  Manage and monitor application services and configuration
+                </p>
+                <div className="mt-auto">
+                  <span className="text-gray-600 font-medium group-hover:text-gray-700 inline-flex items-center gap-1">
+                    Open Admin Panel
                     <span className="transform group-hover:translate-x-1 transition-transform">
                       →
                     </span>
