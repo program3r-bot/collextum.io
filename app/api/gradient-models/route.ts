@@ -117,7 +117,7 @@ export const GET = async () => {
 
     return NextResponse.json({ models });
   } catch (error) {
-    logger.error(error);
+    logger.error('Failed to fetch models:', error);
     return NextResponse.json(
       { error: 'Failed to fetch models' },
       { status: 500 }

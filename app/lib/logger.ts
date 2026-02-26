@@ -1,17 +1,17 @@
 // Minimal logger implementation for the demo
 export function createLogger(name: string) {
   return {
-    info: (data: unknown, message?: string) => {
-      console.log(`[${name}]`, message || '', data);
+    info: (message: string, data?: unknown) => {
+      console.log(`[${name}]`, message, ...(data !== undefined ? [data] : []));
     },
-    error: (data: unknown, message?: string) => {
-      console.error(`[${name}]`, message || '', data);
+    error: (message: string, data?: unknown) => {
+      console.error(`[${name}]`, message, ...(data !== undefined ? [data] : []));
     },
-    warn: (data: unknown, message?: string) => {
-      console.warn(`[${name}]`, message || '', data);
+    warn: (message: string, data?: unknown) => {
+      console.warn(`[${name}]`, message, ...(data !== undefined ? [data] : []));
     },
-    debug: (data: unknown, message?: string) => {
-      console.debug(`[${name}]`, message || '', data);
+    debug: (message: string, data?: unknown) => {
+      console.debug(`[${name}]`, message, ...(data !== undefined ? [data] : []));
     }
   };
 }

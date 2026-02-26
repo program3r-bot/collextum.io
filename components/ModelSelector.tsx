@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createLogger } from "@/app/lib/logger";
+
+const logger = createLogger("model-selector");
 
 interface Model {
   id: string;
@@ -37,7 +40,7 @@ export default function ModelSelector({ selectedModel, onModelChange }: ModelSel
         }
       })
       .catch((err) => {
-        console.error("Failed to load models:", err);
+        logger.error("Failed to load models:", err);
         setLoading(false);
       });
   }, [hasInitialized, onModelChange, selectedModel]); // Dependencies for the effect

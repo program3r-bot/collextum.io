@@ -11,6 +11,9 @@ import {
   lastAssistantMessageIsCompleteWithToolCalls,
 } from "ai";
 import { useState, useCallback } from "react";
+import { createLogger } from "@/app/lib/logger";
+
+const logger = createLogger("chat");
 
 /**
  * Main chat page component
@@ -58,23 +61,23 @@ export default function Chat() {
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     // Handle client-side tools that are automatically executed
     async onToolCall({ toolCall }) {
-      console.log("Tool call received:", toolCall);
+      logger.info("Tool call received:", toolCall);
       // Return undefined to let interactive tools be handled by the UI
       // askForConfirmation is an interactive tool that requires user input
       return undefined;
     },
     onError: (error) => {
-      console.error("Chat error:", error);
+      logger.error("Chat error:", error);
       // The error object might contain more details
       if (error && typeof error === "object" && "message" in error) {
-        console.log("Error details:", error.message);
+        logger.info("Error details:", error.message);
       }
     },
   });
 
   const handleModelChange = useCallback(
     (model: string, maxTokens?: number) => {
-      console.log("Model changed to:", model, "with maxTokens:", maxTokens);
+      logger.info("Model changed to:", { model, maxTokens });
       setSelectedModel(model);
       if (maxTokens) {
         updateMaxOutputTokens(maxTokens);
@@ -97,7 +100,7 @@ export default function Chat() {
         "x-model": selectedModel,
         ...getHeaders(),
       };
-      console.log("Sending message with headers:", headers);
+      logger.info("Sending message with headers:", headers);
       sendMessage({ text }, { headers });
     },
     [selectedModel, getHeaders, sendMessage]

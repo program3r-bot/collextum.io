@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { CameraIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { createLogger } from "@/app/lib/logger";
+
+const logger = createLogger("screenshotter");
 
 // Browser options
 const BROWSER_OPTIONS = [
@@ -56,7 +59,7 @@ export default function ScreenshotterPage() {
         setDevicesLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to load devices:", err);
+        logger.error("Failed to load devices:", err);
         setDevicesLoading(false);
         // Fallback to a basic list if API fails
         setDeviceList([

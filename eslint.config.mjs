@@ -14,6 +14,14 @@ const eslintConfig = [
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
+      "no-console": "error",
+    },
+  },
+  {
+    // Allow console in the logger implementation
+    files: ["**/lib/logger.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
   {

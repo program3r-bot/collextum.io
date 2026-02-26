@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { devices } from 'playwright';
+import { createLogger } from '@/app/lib/logger';
+
+const logger = createLogger('devices');
 
 export async function GET() {
   try {
@@ -27,7 +30,7 @@ export async function GET() {
 
     return NextResponse.json({ devices: deviceList });
   } catch (error) {
-    console.error('Failed to get devices:', error);
+    logger.error('Failed to get devices:', error);
     return NextResponse.json(
       { error: 'Failed to get device list' },
       { status: 500 }
