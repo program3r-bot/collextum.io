@@ -8,11 +8,13 @@ import {
   CameraIcon,
   Bars3Icon,
   XMarkIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 
 const navigationItems = [
   { name: "Screenshotter", href: "/screenshotter", icon: CameraIcon },
   { name: "Chat", href: "/chat", icon: ChatBubbleLeftRightIcon },
+  { name: "Profile", href: "/profile", icon: UserCircleIcon },
 ];
 
 export default function Navigation() {
