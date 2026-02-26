@@ -5,6 +5,7 @@ import ChatSidebar from "@/components/chat/ChatSidebar";
 import MessagesArea from "@/components/chat/MessagesArea";
 import { useChatParameters } from "@/hooks/useChatParameters";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useUserData } from "@/hooks/useUserData";
 import { useChat } from "@ai-sdk/react";
 import {
   DefaultChatTransport,
@@ -18,7 +19,8 @@ import { useState, useCallback } from "react";
  * parameter controls, and tool support
  */
 export default function Chat() {
-  const [selectedModel, setSelectedModel] = useState("openai-gpt-4.1");
+  const { userData, updateUserData } = useUserData();
+  const [selectedModel, setSelectedModel] = useState(() => userData.selectedModel);
   const [debugMode, setDebugMode] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(320);
 
@@ -76,11 +78,12 @@ export default function Chat() {
     (model: string, maxTokens?: number) => {
       console.log("Model changed to:", model, "with maxTokens:", maxTokens);
       setSelectedModel(model);
+      updateUserData({ selectedModel: model });
       if (maxTokens) {
         updateMaxOutputTokens(maxTokens);
       }
     },
-    [updateMaxOutputTokens]
+    [updateMaxOutputTokens, updateUserData]
   );
 
   const handleNewChat = useCallback(() => {
